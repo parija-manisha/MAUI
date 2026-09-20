@@ -1,0 +1,19 @@
+name: Mac Runner Test
+
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Check Mac
+        run: |
+          echo "Running on Mac"
+          sw_vers
+          uname -m
