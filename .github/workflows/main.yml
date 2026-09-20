@@ -27,7 +27,7 @@ jobs:
 
       - name: Publish Mac Catalyst PKG
         run: |
-          dotnet publish NotesApp.csproj \
+          dotnet publish NotesApp\NotesApp.csproj \
             -f net10.0-maccatalyst \
             -c Release
 
