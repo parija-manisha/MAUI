@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:NotesApp.ViewModels"
+             xmlns:models="clr-namespace:NotesApp.Models"
+             x:Class="NotesApp.Views.NotesListPage"
+             x:DataType="vm:NotesListViewModel"
+             Title="Notes">
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Add" Command="{Binding AddNoteCommand}" Order="Primary" Priority="0" />
+    </ContentPage.ToolbarItems>
+
+    <Grid Padding="12" RowDefinitions="Auto,*" RowSpacing="8">
+
+        <SearchBar Grid.Row="0"
+                   Placeholder="Search notes"
+                   Text="{Binding SearchText}" />
+
+        <RefreshView Grid.Row="1"
+                     IsRefreshing="{Binding IsRefreshing}"
+                     Command="{Binding LoadNotesCommand}">
+            <Grid>
+                <CollectionView ItemsSource="{Binding Notes}" SelectionMode="None">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="models:Note">
+                            <SwipeView>
+                                <SwipeView.RightItems>
+                                    <SwipeItems>
+                                        <SwipeItem Text="Delete"
+                                                   BackgroundColor="#E53935"
+                                                   Command="{Binding Source={RelativeSource AncestorType={x:Type vm:NotesListViewModel}}, Path=DeleteNoteCommand}"
+                                                   CommandParameter="{Binding .}" />
+                                    </SwipeItems>
+                                </SwipeView.RightItems>
+
+                                <Grid Padding="12,10" RowDefinitions="Auto,Auto,Auto" RowSpacing="4">
+                                    <Grid.GestureRecognizers>
+                                        <TapGestureRecognizer
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:NotesListViewModel}}, Path=SelectNoteCommand}"
+                                            CommandParameter="{Binding .}" />
+                                    </Grid.GestureRecognizers>
+
+                                    <Label Grid.Row="0"
+                                           Text="{Binding Title}"
+                                           FontAttributes="Bold"
+                                           FontSize="16"
+                                           LineBreakMode="TailTruncation" />
+
+                                    <Label Grid.Row="1"
+                                           Text="{Binding Content}"
+                                           FontSize="14"
+                                           TextColor="Gray"
+                                           MaxLines="2"
+                                           LineBreakMode="TailTruncation" />
+
+                                    <HorizontalStackLayout Grid.Row="2" Spacing="10">
+                                        <Label Text="{Binding UpdatedAt, StringFormat='{0:g}'}"
+                                               FontSize="11"
+                                               TextColor="LightGray"
+                                               VerticalOptions="Center" />
+                                        <Label Text="&#10003; checklist" FontSize="11" TextColor="Gray" IsVisible="{Binding HasChecklist}" VerticalOptions="Center" />
+                                        <Label Text="&#128247;" FontSize="12" IsVisible="{Binding HasImages}" VerticalOptions="Center" />
+                                        <Label Text="&#127908;" FontSize="12" IsVisible="{Binding HasAudio}" VerticalOptions="Center" />
+                                        <Label Text="&#128206;" FontSize="12" IsVisible="{Binding HasFiles}" VerticalOptions="Center" />
+                                    </HorizontalStackLayout>
+                                </Grid>
+                            </SwipeView>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+                <VerticalStackLayout IsVisible="{Binding IsEmpty}"
+                                     VerticalOptions="Center"
+                                     HorizontalOptions="Center"
+                                     Spacing="8">
+                    <Label Text="No notes yet"
+                           FontSize="18"
+                           HorizontalTextAlignment="Center" />
+                    <Label Text="Tap Add to create your first note"
+                           FontSize="14"
+                           TextColor="Gray"
+                           HorizontalTextAlignment="Center" />
+                </VerticalStackLayout>
+            </Grid>
+        </RefreshView>
+    </Grid>
+</ContentPage>

@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:NotesApp.ViewModels"
+             xmlns:models="clr-namespace:NotesApp.Models"
+             xmlns:converters="clr-namespace:NotesApp.Converters"
+             x:Class="NotesApp.Views.NoteEditPage"
+             x:DataType="vm:NoteEditViewModel"
+             Title="Note">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <converters:BoolToStrikeThroughConverter x:Key="StrikeThroughConverter" />
+            <converters:CheckedTextColorConverter x:Key="CheckedTextColorConverter" />
+            <converters:RecordButtonTextConverter x:Key="RecordButtonTextConverter" />
+            <converters:RecordButtonColorConverter x:Key="RecordButtonColorConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Save" Command="{Binding SaveCommand}" Order="Primary" Priority="0" />
+        <ToolbarItem Text="Delete" Command="{Binding DeleteCommand}" Order="Secondary" Priority="1" />
+    </ContentPage.ToolbarItems>
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="16">
+
+            <Entry Text="{Binding Title}"
+                   Placeholder="Title"
+                   FontSize="20"
+                   FontAttributes="Bold" />
+
+            <Label Text="{Binding LastEditedText}"
+                   FontSize="12"
+                   TextColor="Gray" />
+
+            <Editor Text="{Binding Content}"
+                    Placeholder="Start typing your note..."
+                    AutoSize="TextChanges"
+                    MinimumHeightRequest="120" />
+
+            <!-- Checklist -->
+            <BoxView HeightRequest="1" Color="#DDDDDD" />
+            <Label Text="Checklist" FontAttributes="Bold" FontSize="14" />
+
+            <VerticalStackLayout BindableLayout.ItemsSource="{Binding ChecklistItems}" Spacing="2">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="models:ChecklistItem">
+                        <Grid ColumnDefinitions="Auto,*,Auto" Padding="0,2">
+                            <CheckBox Grid.Column="0"
+                                      IsChecked="{Binding IsChecked, Mode=TwoWay}"
+                                      VerticalOptions="Center" />
+
+                            <Label Grid.Column="1"
+                                   Text="{Binding Text}"
+                                   VerticalOptions="Center"
+                                   TextDecorations="{Binding IsChecked, Converter={StaticResource StrikeThroughConverter}}"
+                                   TextColor="{Binding IsChecked, Converter={StaticResource CheckedTextColorConverter}}" />
+
+                            <Button Grid.Column="2"
+                                    Text="&#10005;"
+                                    WidthRequest="36"
+                                    HeightRequest="36"
+                                    Padding="0"
+                                    FontSize="14"
+                                    BackgroundColor="Transparent"
+                                    TextColor="Gray"
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:NoteEditViewModel}}, Path=DeleteChecklistItemCommand}"
+                                    CommandParameter="{Binding .}" />
+                        </Grid>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                <Entry Grid.Column="0"
+                       Placeholder="Add checklist item"
+                       Text="{Binding NewChecklistItemText}"
+                       ReturnCommand="{Binding AddChecklistItemCommand}" />
+                <Button Grid.Column="1" Text="Add" Command="{Binding AddChecklistItemCommand}" />
+            </Grid>
+
+            <!-- Attachments -->
+            <BoxView HeightRequest="1" Color="#DDDDDD" />
+            <Label Text="Attachments" FontAttributes="Bold" FontSize="14" />
+
+            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                <Button Grid.Column="0" Text="Image" Command="{Binding AddImageCommand}" />
+                <Button Grid.Column="1" Text="File" Command="{Binding AddFileCommand}" />
+                <Button Grid.Column="2"
+                        Text="{Binding IsRecording, Converter={StaticResource RecordButtonTextConverter}}"
+                        BackgroundColor="{Binding IsRecording, Converter={StaticResource RecordButtonColorConverter}}"
+                        Command="{Binding ToggleRecordingCommand}" />
+            </Grid>
+
+            <Label Text="{Binding RecordingStatusText}"
+                   TextColor="#E53935"
+                   FontAttributes="Bold"
+                   IsVisible="{Binding IsRecording}" />
+
+            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Attachments}" Spacing="6">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="models:NoteAttachment">
+                        <Grid ColumnDefinitions="Auto,*,Auto" Padding="6" ColumnSpacing="10">
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:NoteEditViewModel}}, Path=OpenAttachmentCommand}"
+                                    CommandParameter="{Binding .}" />
+                            </Grid.GestureRecognizers>
+
+                            <Image Grid.Column="0"
+                                   Source="{Binding FullPath}"
+                                   WidthRequest="48"
+                                   HeightRequest="48"
+                                   Aspect="AspectFill"
+                                   IsVisible="{Binding IsImage}" />
+
+                            <Label Grid.Column="0"
+                                   Text="&#127908;"
+                                   FontSize="28"
+                                   WidthRequest="48"
+                                   HorizontalTextAlignment="Center"
+                                   VerticalOptions="Center"
+                                   IsVisible="{Binding IsAudio}" />
+
+                            <Label Grid.Column="0"
+                                   Text="&#128206;"
+                                   FontSize="28"
+                                   WidthRequest="48"
+                                   HorizontalTextAlignment="Center"
+                                   VerticalOptions="Center"
+                                   IsVisible="{Binding IsFile}" />
+
+                            <Label Grid.Column="1"
+                                   Text="{Binding DisplayName}"
+                                   VerticalOptions="Center"
+                                   LineBreakMode="TailTruncation" />
+
+                            <Button Grid.Column="2"
+                                    Text="&#10005;"
+                                    WidthRequest="36"
+                                    HeightRequest="36"
+                                    Padding="0"
+                                    FontSize="14"
+                                    BackgroundColor="Transparent"
+                                    TextColor="Gray"
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:NoteEditViewModel}}, Path=DeleteAttachmentCommand}"
+                                    CommandParameter="{Binding .}" />
+                        </Grid>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
